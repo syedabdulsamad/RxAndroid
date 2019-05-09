@@ -6,15 +6,17 @@ import android.util.Log;
 import android.widget.TextView;
 
 import io.reactivex.Observable;
+import io.reactivex.functions.Function;
 import io.reactivex.observers.DisposableObserver;
 
 public class MainActivity extends AppCompatActivity {
 
 
     private static String TAG = "RX-Java";
-    private String rxJava = "Hello from RX Java";
+    private String[] rxJava = {"Hello", "from", "RX", "Java"};
     Observable<String> observable;
     DisposableObserver<String> disposableObserver;
+
 
     @Override
     protected void onDestroy() {
@@ -30,12 +32,17 @@ public class MainActivity extends AppCompatActivity {
 
         final TextView textView = (TextView) findViewById(R.id.textView);
 
-        observable = Observable.just(rxJava);
+        observable = Observable.fromArray(rxJava).map(new Function<String, String>() {
+            @Override
+            public String apply(String s) throws Exception {
+                return s.toUpperCase();
+            }
+        });
 
         disposableObserver = new DisposableObserver<String>() {
             @Override
             public void onNext(String s) {
-                textView.setText(s);
+                //  textView.setText(s);
                 Log.d(TAG, s);
 
             }
