@@ -6,6 +6,8 @@ import android.util.Log;
 import android.widget.TextView;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableSource;
 import io.reactivex.functions.Function;
 import io.reactivex.observers.DisposableObserver;
 
@@ -32,12 +34,23 @@ public class MainActivity extends AppCompatActivity {
 
         final TextView textView = (TextView) findViewById(R.id.textView);
 
-        observable = Observable.fromArray(rxJava).map(new Function<String, String>() {
+        /*observable = Observable.fromArray(rxJava).map(new Function<String, String>() {
             @Override
             public String apply(String s) throws Exception {
                 return s.toUpperCase();
             }
-        });
+        });*/
+
+
+        observable = Observable.fromArray(rxJava).
+                flatMap(new Function<String, ObservableSource<String>>() {
+                    @Override
+                    public ObservableSource<String> apply(String s) throws Exception {
+
+                        return Observable.just(s, s + "1", s + "2");
+                    }
+                });
+
 
         disposableObserver = new DisposableObserver<String>() {
             @Override
