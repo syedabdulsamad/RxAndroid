@@ -5,6 +5,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.example.rxandroid.Model.Student;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -19,8 +22,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static String TAG = "RX-Java";
     private String[] rxJava = {"Hello", "from", "RX", "Java"};
-    Observable<List<String>> observable;
-    DisposableObserver<List<String>> disposableObserver;
+    Observable<Student> observable;
+    DisposableObserver<Student> disposableObserver;
 
 
     @Override
@@ -34,39 +37,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        ArrayList<Student>students = new ArrayList<Student>();
+        students.add(new Student("Syed","address1", 20));
+        students.add(new Student("Syed","address1", 20));
+        students.add(new Student("Abdul","address2", 22));
+        students.add(new Student("Abdul","address2", 22));
+        students.add(new Student("Samad","address3", 234));
+        students.add(new Student("Samad","address3", 254));
 
-        final TextView textView = (TextView) findViewById(R.id.textView);
+        observable = Observable.fromIterable(students).distinct(s -> s.getAge());
 
-        /*observable = Observable.fromArray(rxJava).map(new Function<String, String>() {
+
+        disposableObserver = new DisposableObserver<Student>() {
             @Override
-            public String apply(String s) throws Exception {
-                return s.toUpperCase();
-            }
-        });*/
-
-
-        observable = Observable.fromArray(rxJava).
-                flatMap(new Function<String, ObservableSource<List<String>>>() {
-                    @Override
-                    public ObservableSource<List<String>> apply(String s) throws Exception {
-
-                        return Observable.just(s, s + "1", s + "2").buffer(3).
-                                filter(new Predicate<List<String>>() {
-                                    @Override
-                                    public boolean test(List<String> strings) throws Exception {
-                                       return strings.get(0) == "RX";
-                                    }
-                                });
-                    }
-                });
-
-
-        disposableObserver = new DisposableObserver<List<String>>() {
-            @Override
-            public void onNext(List<String> s) {
+            public void onNext(Student s) {
                 //  textView.setText(s);
 
-                Log.d(TAG, ""+s.toString());
+                Log.d(TAG, ""+s.getName());
 
             }
 
