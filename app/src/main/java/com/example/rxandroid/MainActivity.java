@@ -5,10 +5,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
+import java.util.List;
+
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableSource;
 import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 import io.reactivex.observers.DisposableObserver;
 
 public class MainActivity extends AppCompatActivity {
@@ -16,8 +19,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static String TAG = "RX-Java";
     private String[] rxJava = {"Hello", "from", "RX", "Java"};
-    Observable<String> observable;
-    DisposableObserver<String> disposableObserver;
+    Observable<List<String>> observable;
+    DisposableObserver<List<String>> disposableObserver;
 
 
     @Override
@@ -43,20 +46,27 @@ public class MainActivity extends AppCompatActivity {
 
 
         observable = Observable.fromArray(rxJava).
-                flatMap(new Function<String, ObservableSource<String>>() {
+                flatMap(new Function<String, ObservableSource<List<String>>>() {
                     @Override
-                    public ObservableSource<String> apply(String s) throws Exception {
+                    public ObservableSource<List<String>> apply(String s) throws Exception {
 
-                        return Observable.just(s, s + "1", s + "2");
+                        return Observable.just(s, s + "1", s + "2").buffer(3).
+                                filter(new Predicate<List<String>>() {
+                                    @Override
+                                    public boolean test(List<String> strings) throws Exception {
+                                       return strings.get(0) == "RX";
+                                    }
+                                });
                     }
                 });
 
 
-        disposableObserver = new DisposableObserver<String>() {
+        disposableObserver = new DisposableObserver<List<String>>() {
             @Override
-            public void onNext(String s) {
+            public void onNext(List<String> s) {
                 //  textView.setText(s);
-                Log.d(TAG, s);
+
+                Log.d(TAG, ""+s.toString());
 
             }
 
