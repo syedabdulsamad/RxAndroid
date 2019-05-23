@@ -1,47 +1,45 @@
 package com.example.rxandroid;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import com.example.rxandroid.Model.Student;
+import com.jakewharton.rxbinding3.view.RxView;
+import com.jakewharton.rxbinding3.widget.RxTextView;
 
 import java.util.ArrayList;
 
-import io.reactivex.Observable;
-import io.reactivex.observers.DisposableObserver;
-import io.reactivex.subjects.AsyncSubject;
-import io.reactivex.subjects.BehaviorSubject;
-import io.reactivex.subjects.PublishSubject;
-import io.reactivex.subjects.ReplaySubject;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+import kotlin.Unit;
 
 public class MainActivity extends AppCompatActivity {
 
 
     private static String TAG = "RX-Java";
     private String[] rxJava = {"Hello", "from", "RX", "Java"};
-    Observable<Student> observable;
-    DisposableObserver<Student> disposableObserver;
+    Disposable disposable;
 
     // Example of AsyncSubject
-    AsyncSubject<Student> asyncSubject;
-
-
-    AsyncSubject<String> asyncSubject2;
-    BehaviorSubject<String> behaviourSubject;
-    PublishSubject<String> publishSubject;
-    ReplaySubject<String> replaySubject;
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        disposableObserver.dispose();
+        disposable.dispose();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        TextView textView = findViewById(R.id.textView);
+        EditText textEdit = findViewById(R.id.editText);
+        Button button = findViewById(R.id.button);
 
         ArrayList<Student> students = new ArrayList<Student>();
         students.add(new Student("Syed", "address1", 20));
@@ -52,133 +50,27 @@ public class MainActivity extends AppCompatActivity {
         students.add(new Student("Samad", "address3", 254));
 
 
-        observable = Observable.fromIterable(students).distinct(s -> s.getAge())
-                .skip(1) // skip first n operators
-                .skipLast(1); // skip last n operators
-
-        // creating the subject
-        asyncSubject = AsyncSubject.create();
-        // observable subscribing with Subject
-        observable.subscribe(asyncSubject);
-
-        disposableObserver = new DisposableObserver<Student>() {
+        disposable = RxTextView.textChanges(textEdit).subscribe(new Consumer<CharSequence>() {
             @Override
-            public void onNext(Student s) {
-                //  textView.setText(s);
-                Log.d(TAG, "" + s.getAddress());
+            public void accept(CharSequence charSequence) throws Exception {
+                textView.setText(charSequence);
             }
+        });
 
+
+        RxView.clicks(button).subscribe(new Consumer<Unit>() {
             @Override
-            public void onError(Throwable e) {
-                Log.d(TAG, e.getLocalizedMessage());
+            public void accept(Unit unit) throws Exception {
+                moveToSecondActivity();
             }
+        });
+    }
 
-            @Override
-            public void onComplete() {
-                Log.d(TAG, "Completed");
-            }
-        };
-        //observable.subscribeWith(disposableObserver);
+    public void moveToSecondActivity() {
 
-        // Async subject subscribing with Observer.
-        // asyncSubject.subscribe(disposableObserver);
-        //  asyncSubjectExample();
-        //  behaviourSubjectExample();
-        //  publishSubjectExample();
-        replaySubjectExample();
-
-
+        Intent intent = new Intent(this, StudentsListActivity.class);
+        startActivity(intent);
 
     }
 
-    private void asyncSubjectExample() {
-
-        Log.d(TAG, "********** Async Subject Example **************");
-
-        asyncSubject2 = AsyncSubject.create();
-        asyncSubject2.onNext("Syed Abdul Samad");
-
-        asyncSubject2.subscribe(getDisposableObserver());
-        asyncSubject2.onNext("Qanita Abdul Samad");
-
-        asyncSubject2.subscribe(getDisposableObserver());
-
-        asyncSubject2.onNext("Holah Samad");
-        asyncSubject2.onComplete();
-        asyncSubject2.subscribe(getDisposableObserver());
-
-    }
-
-    private void behaviourSubjectExample() {
-        // Behaviour subject emits the most recent value that is emitted before
-        // subscription and all the susiquent values after that
-        Log.d(TAG, "********** Behaviour Subject Example **************");
-
-        behaviourSubject = BehaviorSubject.createDefault("Name");
-        behaviourSubject.subscribe(getDisposableObserver());
-        behaviourSubject.onNext("Syed");
-
-        behaviourSubject.subscribe(getDisposableObserver());
-        behaviourSubject.onNext("Qanita");
-
-        behaviourSubject.subscribe(getDisposableObserver());
-
-        behaviourSubject.onNext("Holah");
-        behaviourSubject.subscribe(getDisposableObserver());
-        behaviourSubject.onComplete();
-
-    }
-
-    private void publishSubjectExample() {
-        // Behaviour subject emits the most recent value that is emitted before
-        // subscription and all the susiquent values after that
-
-        Log.d(TAG, "********** Publish Subject Example **************");
-
-        publishSubject = PublishSubject.create();
-        publishSubject.subscribe(getDisposableObserver());
-        publishSubject.onNext("Syed");
-        publishSubject.onNext("Qanita");
-        publishSubject.subscribe(getDisposableObserver());
-        publishSubject.onNext("Holah");
-        publishSubject.onComplete();
-    }
-
-    private void replaySubjectExample() {
-        // Behaviour subject emits the most recent value that is emitted before
-        // subscription and all the susiquent values after that
-
-        Log.d(TAG, "********** Replay Subject Example **************");
-
-        replaySubject = ReplaySubject.create();
-        replaySubject.subscribe(getDisposableObserver());
-        replaySubject.onNext("Syed");
-        replaySubject.onNext("Qanita");
-        replaySubject.subscribe(getDisposableObserver());
-        replaySubject.onNext("Holah");
-        replaySubject.onComplete();
-    }
-
-
-
-    private DisposableObserver<String> getDisposableObserver() {
-
-        DisposableObserver<String> dObserver = new DisposableObserver<String>() {
-            @Override
-            public void onNext(String s) {
-                Log.d(TAG, s);
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Log.d(TAG, e.getMessage());
-            }
-
-            @Override
-            public void onComplete() {
-                Log.d(TAG, "On Complete");
-            }
-        };
-        return dObserver;
-    }
 }
