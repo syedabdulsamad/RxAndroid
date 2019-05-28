@@ -5,16 +5,17 @@ import com.example.rxandroid.Model.Student;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.reactivex.Observable;
-import io.reactivex.Observer;
-import io.reactivex.observers.DisposableObserver;
+import io.reactivex.subjects.BehaviorSubject;
 
 public class StudentsDataHolder {
 
 
     private static StudentsDataHolder sharedHolder = null;
-    Observable<List<Student>> studentsObservable = null;
-    DisposableObserver<List<Student>> studentsObserver = null;
+    BehaviorSubject<List<Student>> studentsSubject = BehaviorSubject.create();
+
+    public BehaviorSubject<List<Student>> getStudentsSubject() {
+        return studentsSubject;
+    }
 
     public List<Student> getStudents() {
         return students;
@@ -31,7 +32,7 @@ public class StudentsDataHolder {
 
     private StudentsDataHolder() {
         fillStudentsList();
-       // studentsObservable = Observable.from()
+        studentsSubject.onNext(students);
     }
 
     private void fillStudentsList() {
@@ -46,6 +47,9 @@ public class StudentsDataHolder {
 
     public void addStudent(Student s) {
         students.add(s);
+        if(studentsSubject != null && studentsSubject.hasObservers()) {
+            studentsSubject.onNext(students);
+        }
     }
 
 

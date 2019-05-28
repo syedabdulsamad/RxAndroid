@@ -7,21 +7,23 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.example.rxandroid.Model.Student;
 import com.jakewharton.rxbinding3.view.RxView;
-import com.jakewharton.rxbinding3.widget.RxTextView;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
+import io.reactivex.observers.DisposableObserver;
 import kotlin.Unit;
 
 public class MainActivity extends AppCompatActivity {
 
 
     private static String TAG = "RX-Java";
-    private String[] rxJava = {"Hello", "from", "RX", "Java"};
+    private List<String> rxJava = new ArrayList<String>();
+
     Disposable disposable;
 
     // Example of AsyncSubject
@@ -36,34 +38,44 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        rxJava.add("Hello");
+        Observable<List<String>> observable = Observable.just(rxJava);
+
+
+        DisposableObserver<List<String>> observer = new DisposableObserver<List<String>>() {
+            @Override
+            public void onNext(List<String> strings) {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        };
+
+        observable.subscribeWith(observer);
+
+        rxJava.add("RX");
+        rxJava.add("Java");
+
 
         TextView textView = findViewById(R.id.textView);
+
         EditText textEdit = findViewById(R.id.editText);
         Button button = findViewById(R.id.button);
-
-        ArrayList<Student> students = new ArrayList<Student>();
-        students.add(new Student("Syed", "address1", 20));
-        students.add(new Student("Syed", "address1", 20));
-        students.add(new Student("Abdul", "address2", 22));
-        students.add(new Student("Abdul", "address2", 22));
-        students.add(new Student("Samad", "address3", 234));
-        students.add(new Student("Samad", "address3", 254));
-
-
-        disposable = RxTextView.textChanges(textEdit).subscribe(new Consumer<CharSequence>() {
-            @Override
-            public void accept(CharSequence charSequence) throws Exception {
-                textView.setText(charSequence);
-            }
-        });
-
-
         RxView.clicks(button).subscribe(new Consumer<Unit>() {
             @Override
             public void accept(Unit unit) throws Exception {
                 moveToSecondActivity();
             }
         });
+
     }
 
     public void moveToSecondActivity() {
